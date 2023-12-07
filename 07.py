@@ -1,5 +1,4 @@
 from collections import defaultdict
-from functools import cmp_to_key
 from enum import Enum
 
 class HandType(Enum):
@@ -11,13 +10,13 @@ class HandType(Enum):
     PAIR = 1
     HIGH_CARD = 0
 
+CARD_ORDER1 = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+CARD_ORDER2 = ['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J']
+
 with open('07.txt') as f:
     hands = f.readlines()
     hands = [hand.strip().split(' ') for hand in hands]
     hands = [[card, int(bid)] for card, bid in hands]
-
-CARD_ORDER1 = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
-CARD_ORDER2 = ['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J']
 
 def count(cards, include_j=True):
     counter = defaultdict(int)
@@ -42,39 +41,39 @@ def get_type2(cards):
     js = counter['J']
     
     if counts[5]: return HandType.FIVE
-    if counts[4]: return HandType.FIVE if js else HandType.FOUR
+    if counts[4]: 
+        if js == 1: return HandType.FIVE
+        return HandType.FOUR
     if counts[3]:
         if js == 2: return HandType.FIVE
-        if js == 1: return HandType.FULL_HOUSE
+        if js == 1: return HandType.FOUR
         if counts[2]: return HandType.FULL_HOUSE
         return HandType.THREE
-    if counts[2] >= 2: 
+    if counts[2] == 2: 
         if js == 1: return HandType.FULL_HOUSE
         return HandType.TWO_PAIRS
     if counts[2] == 1: 
         if js == 3: return HandType.FIVE
         if js == 2: return HandType.FOUR
-        if js == 1: HandType.THREE
+        if js == 1: return HandType.THREE
         return HandType.PAIR
     if js >= 4: return HandType.FIVE
-    if js == 3: return HandType.FULL_HOUSE
+    if js == 3: return HandType.FOUR
     if js == 2: return HandType.THREE
     if js == 1: return HandType.PAIR
     return HandType.HIGH_CARD
 
-def process(card_order, type_fn):
-    global hands
-    for hand in hands: 
-        hand.append(type_fn(hand[0]))
-    def key_fn(hand):
-        return (hand[2].value, [-card_order.index(c) for c in hand[0]])
-    hands.sort(key=key_fn)
+def process(hands, card_order, type_fn):
+    def sort_key(hand):
+        type = type_fn(hand[0]).value
+        order = [-card_order.index(c) for c in hand[0]]
+        return (type, order)
+    hands.sort(key=sort_key)
+    total = 0
+    for i, (_, bid) in enumerate(hands):
+        total += (i + 1) * bid
+    print(total)
 
-# process(CARD_ORDER1, get_type1)
-process(CARD_ORDER2, get_type2)
+# process(hands, CARD_ORDER1, get_type1)
+process(hands, CARD_ORDER2, get_type2)
 
-rv = 0
-for i, (cards, bid, type) in enumerate(hands):
-    rv += (i + 1) * bid
-    print(cards, type.name, bid, i + 1, (i + 1) * bid)
-print(rv)
