@@ -21,7 +21,7 @@ rv = len(lines)
 def process_card(card_pos, starting):
     global rv
     _, winning, own = lines[card_pos]
-    count = len([card for card in own if card in winning])
+    count = sum(1 for card in own if card in winning)
     rv += count
     for i in range(count):
         process_card(card_pos + i + 1, starting)
