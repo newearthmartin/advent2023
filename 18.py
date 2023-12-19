@@ -1,5 +1,6 @@
 with open('18.txt') as f:
-    lines = [line.strip().split(' ') for line in f.readlines() if line.strip()]
+    lines = (line.strip() for line in f.readlines())
+    lines = (line.split(' ') for line in lines if line)
     lines = [(direction, int(num), color[2:-1]) for direction, num, color in lines]
 
 

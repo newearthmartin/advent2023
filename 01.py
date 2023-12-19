@@ -1,13 +1,14 @@
-from functools import reduce
+import re
 
 with open('01.txt') as f:
-    lines = f.readlines()
-    lines = map(lambda line: line.strip(), lines)
+    lines = [line.strip() for line in f.readlines()]
 
-# def process(line):
-#     line = re.sub('[A-Za-z]', '', line)
-#     line = line[0] + line[-1]
-#     return int(line)
+
+def process(line):
+    line = re.sub(r'[A-Za-z]', '', line)
+    line = line[0] + line[-1]
+    return int(line)
+
 
 NUMBERS = {
     'one': '1',
@@ -21,7 +22,8 @@ NUMBERS = {
     'nine': '9',
 }
 
-def process(line):
+
+def process2(line):
     new_line = ''
     for i, c in enumerate(line):
         if c.isdigit():
@@ -33,6 +35,6 @@ def process(line):
                     break
     return int(new_line[0] + new_line[-1])
 
-lines = map(process, lines)
-val = reduce(lambda a, b: a + b, lines)
-print(val)
+
+print('Part 1:', sum(map(process, lines)))
+print('Part 2:', sum(map(process2, lines)))

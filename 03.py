@@ -1,40 +1,33 @@
+import re
+
 with open('03.txt') as f:
-    lines = f.readlines()
-    lines = [line.strip() for line in lines]
+    lines = [line.strip() for line in f.readlines()]
+
 symbols = []
 numbers = []
 for i, line in enumerate(lines):
-    number = ''
-    number_pos = None
-    for j, c in enumerate(line):
-        if c.isdigit():
-            number += c
-            if number_pos is None:
-                number_pos = (i,j)
-        else:
-            if number:
-                numbers.append((*number_pos, number))
-                number_pos = None
-                number = ''
-            if c != '.':
-                symbols.append((i, j, c))
-    if number: 
-        numbers.append((*number_pos, number))
+    numbers += [(i, m.span()[0], m.group()) for m in re.finditer(r'\d+', line)]
+    symbols += [(i, j, c) for j, c in enumerate(line) if not c.isdigit() and c != '.']
 
-# rv = 0
-# for ni, nj, num in numbers:
-#     for si, sj, _ in symbols:
-#         if abs(ni - si) <= 1 and nj - 1 <= sj and sj <= nj + len(num):
-#             rv += int(num)
-#             break
-# print(rv)
 
-rv = 0
-for si, sj, sym in symbols:
-    if sym != '*': continue
-    nums = [int(num) 
-                for ni, nj, num in numbers 
-                if abs(ni - si) <= 1 and nj - 1 <= sj and sj <= nj + len(num)]
-    if len(nums) == 2:
-        rv += nums[0] * nums[1]
-print(rv)
+def touches(ni, nj, num, si, sj):
+    return abs(ni - si) <= 1 and nj - 1 <= sj <= nj + len(num)
+
+
+def part1():
+    return sum(int(num) for ni, nj, num in numbers
+               if any(touches(ni, nj, num, si, sj) for si, sj, _ in symbols))
+
+
+def part2():
+    gears = [(si, sj) for si, sj, sym in symbols if sym == '*']
+    touched = [
+        [num for ni, nj, num in numbers if touches(ni, nj, num, si, sj)]
+        for si, sj in gears
+    ]
+    parts = [p for p in touched if len(p) == 2]
+    return sum(int(p1) * int(p2) for p1, p2 in parts)
+
+
+print('Part 1:', part1())
+print('Part 2:', part2())

@@ -1,17 +1,19 @@
 from collections import defaultdict
 
 with open('17.txt') as f:
-    lines = [list(map(int, list(l.strip()))) for l in f.readlines() if l.strip()]
+    lines = (list(line.strip()) for line in f.readlines())
+    lines = [list(map(int, line)) for line in lines]
     lines_len = len(lines)
     line_len = len(lines[0])
 
 
 def ok(pos): return 0 <= pos[0] < lines_len and 0 <= pos[1] < line_len
 def is_turn(dir1, dir2): return (dir1[0] == 0) != (dir2[0] == 0)
+
+
 def print_graph(graph):
     edges = sum(1 for edges in graph.values() for edge in edges)
     print(len(graph), 'nodes -', edges, 'edges\n')
-
 
 
 def create_graph1():
@@ -43,6 +45,7 @@ def create_graph1():
     graph['start'].append(((0, 0, 0, 1), 0))
     print_graph(graph)
     return graph
+
 
 def create_graph2():
     print('creating graph - part 2')

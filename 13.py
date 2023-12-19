@@ -1,21 +1,23 @@
-patterns = []
-pattern = []
 with open('13.txt') as f:
-    for line in f.readlines():
-        line = line.strip()
-        if line: 
-            pattern.append(line)
-        elif pattern:
-            patterns.append(pattern)
-            pattern = []
-    if pattern:
-        patterns.append(pattern)
+    lines = [line.strip() for line in f.readlines()]
+    patterns = []
+    current_pattern = []
+    for line in lines:
+        if line:
+            current_pattern.append(line)
+        elif current_pattern:
+            patterns.append(current_pattern)
+            current_pattern = []
+    if current_pattern: patterns.append(current_pattern)
 
-def rows_diff(pattern, r1, r2): 
+
+def rows_diff(pattern, r1, r2):
     return sum(1 for j in range(len(pattern[0])) if pattern[r1][j] != pattern[r2][j])
+
 
 def cols_diff(pattern, c1, c2):
     return sum(1 for i in range(len(pattern)) if pattern[i][c1] != pattern[i][c2])
+
 
 def find_row_reflection(pattern, target_count):
     rows = len(pattern)
@@ -26,6 +28,7 @@ def find_row_reflection(pattern, target_count):
             return i + 1
     return 0
 
+
 def find_col_reflection(pattern, target_count):
     cols = len(pattern[0])
     for j in range(cols - 1):
@@ -35,23 +38,12 @@ def find_col_reflection(pattern, target_count):
             return j + 1
     return 0
 
-def print_pattern(pattern):
-    nums = (str((i + 1) % 10) for i in range(len(pattern[0])))
-    print('  ' + ''.join(nums))
-    for i, line in enumerate(pattern):
-        print((i + 1) % 10, line)
-    print()
 
-rv1 = 0
-rv2 = 0
-for pattern in patterns:
-    print_pattern(pattern)
-    col1 = find_col_reflection(pattern, 0)
-    row1 = find_row_reflection(pattern, 0)
-    col2 = find_col_reflection(pattern, 1)
-    row2 = find_row_reflection(pattern, 1)
-    rv1 += col1 + row1 * 100
-    rv2 += col2 + row2 * 100
-    print(row1, col1, '->', rv1)
-    print(row2, col2, '->', rv2)
-    print()
+def count_reflections(target_count):
+    col_val = sum(find_col_reflection(pattern, target_count) for pattern in patterns)
+    row_val = sum(find_row_reflection(pattern, target_count) for pattern in patterns)
+    return col_val + 100 * row_val
+
+
+print('Part 1:', count_reflections(0))
+print('Part 2:', count_reflections(1))

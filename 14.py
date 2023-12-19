@@ -1,12 +1,17 @@
-with open('14.txt') as f:
-    lines = [list(l.strip()) for l in f.readlines()]
+import copy
 
-def move_rock(i, j, dir):
+
+with open('14.txt') as f:
+    lines1 = [list(line.strip()) for line in f.readlines()]
+    lines2 = copy.deepcopy(lines1)
+
+
+def move_rock(lines, i, j, direction):
     i0 = i
     j0 = j
     while True:
-        i2 = i + dir[0]
-        j2 = j + dir[1]
+        i2 = i + direction[0]
+        j2 = j + direction[1]
         if i2 < 0 or i2 >= len(lines): break
         if j2 < 0 or j2 >= len(lines[i]): break
         if lines[i2][j2] != '.': break
@@ -16,60 +21,66 @@ def move_rock(i, j, dir):
         lines[i0][j0] = '.'
         lines[i][j] = 'O'
 
-def tilt(dir):
+
+def tilt(lines, direction):
     lines_len = len(lines)
     line_len = len(lines[0])
-    def north_generator():
-        for i in range(lines_len): 
-            for j in range(line_len): 
-                yield(i,j)
-    def south_generator():
-        for i in range(lines_len, 0, -1):
-            for j in range(line_len):
-                yield(i - 1, j)
-    def west_generator():
-        for j in range(line_len):
-            for i in range(lines_len):
-                yield(i, j)
-    def east_generator():
-        for j in range(line_len, 0, -1):
-            for i in range(lines_len):
-                yield(i, j - 1)
-    if dir == (-1, 0): gen = north_generator
-    if dir == (1, 0): gen = south_generator
-    if dir == (0, -1): gen = west_generator
-    if dir == (0, 1): gen = east_generator
-    for i, j in gen():
+
+    north_gen = ((i, j) for i in range(lines_len) for j in range(line_len))
+    south_gen = ((i - 1, j) for i in range(lines_len, 0, -1) for j in range(line_len))
+    west_gen = ((i, j) for j in range(line_len) for i in range(lines_len))
+    east_gen = ((i, j - 1) for j in range(line_len, 0, -1) for i in range(lines_len))
+
+    if direction == (-1, 0): gen = north_gen
+    if direction == (1, 0): gen = south_gen
+    if direction == (0, -1): gen = west_gen
+    if direction == (0, 1): gen = east_gen
+    for i, j in gen:
         if lines[i][j] == 'O': 
-            move_rock(i, j, dir)
+            move_rock(lines, i, j, direction)
 
-# tilt((-1, 0))
 
-visited = {}
-for i in range(1000000000):
-    print(i)
-    state = tuple((i,j) for i, line in enumerate(lines) for j, c in enumerate(line) if c == 'O')
-    if state in visited:
-        cycle_start = visited[state]
-        cycle_len = i - cycle_start
-        break
-    visited[state] = i
-    tilt((-1, 0))
-    tilt((0, -1))
-    tilt((1, 0))
-    tilt((0, 1))
-print('Cycle start', cycle_start, '- cycle length', cycle_len)
+def count_load(lines):
+    rv = 0
+    for i, line in enumerate(lines):
+        rocks = sum(1 for c in line if c == 'O')
+        rv += (len(lines) - i) * rocks
+    return rv
 
-target = (1000000000 - cycle_start) % cycle_len
-for i in range(target):
-    print(1000000000 - target + i)
-    tilt((-1, 0))
-    tilt((0, -1))
-    tilt((1, 0))
-    tilt((0, 1))
 
-rv = 0
-for i, line in enumerate(lines):
-    rocks = sum(1 for c in line if c == 'O')
-    rv += (len(lines) - i) * rocks
-print('Weight', rv)
+def part1(lines):
+    tilt(lines, (-1, 0))
+    return count_load(lines)
+
+
+def part2(lines):
+    visited = {}
+    for i in range(1000000000):
+        print(i)
+        state = tuple((i,j) for i, line in enumerate(lines) for j, c in enumerate(line) if c == 'O')
+        if state in visited:
+            cycle_start = visited[state]
+            cycle_len = i - cycle_start
+            break
+        visited[state] = i
+        tilt(lines, (-1, 0))
+        tilt(lines, (0, -1))
+        tilt(lines, (1, 0))
+        tilt(lines, (0, 1))
+    print('Cycle start', cycle_start, '- cycle length', cycle_len)
+
+    target = (1000000000 - cycle_start) % cycle_len
+    for i in range(target):
+        print(1000000000 - target + i)
+        tilt(lines, (-1, 0))
+        tilt(lines, (0, -1))
+        tilt(lines, (1, 0))
+        tilt(lines, (0, 1))
+    return count_load(lines)
+
+
+rv1 = part1(lines1)
+rv2 = part2(lines2)
+print()
+print('Part 1:', rv1)
+print('Part 2:', rv2)
