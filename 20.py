@@ -11,16 +11,23 @@ with (open('20.txt') as f):
     types = {name: module_type for (name, module_type), _ in lines}
     out = {name: out for (name, _), out in lines}
     state = defaultdict(lambda: {})
-    for name, outs in out.items():
-        for m_out in outs:
-            if types.get(m_out, None) == '&':
-                state[m_out][name] = False
+
+    def set_state():
+        state.clear()
+        for name, outs in out.items():
+            for m_out in outs:
+                if types.get(m_out, None) == '&':
+                    state[m_out][name] = False
+    set_state()
 
 
 def one_cycle():
     rv1, rv2 = 1, 0
     signals = [('broadcaster', False, 'button')]
+    has_rx = False
     while signals:
+        # print([f'{src} --{"H" if pulse else "L"}--> {name} ' for name, pulse, src in signals])
+        if any(name == 'rx' and not pulse for name, pulse, _ in signals): has_rx = True
         new_signals = []
         for name, pulse, src_name in signals:
             m_type = types.get(name, None)
@@ -43,7 +50,7 @@ def one_cycle():
         signals = new_signals
         rv1 += sum(1 for _, pulse, _ in signals if not pulse)
         rv2 += sum(1 for _, pulse, _ in signals if pulse)
-    return rv1, rv2
+    return rv1, rv2, has_rx
 
 
 def part1():
@@ -55,4 +62,17 @@ def part1():
     return lo * hi
 
 
-print('Part 1:', part1())
+def part2():
+    i = 0
+    while True:
+        if i % 10000 == 0: print(i)
+        i += 1
+        res = one_cycle()
+        if res[2]:
+            print('Found!')
+            return res[2]
+
+
+print('Part 1:', part1())  # 836127690
+set_state()
+print('Part 2:', part2())
