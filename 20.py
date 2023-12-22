@@ -26,6 +26,9 @@ def one_cycle():
     signals = [('broadcaster', False, 'button')]
     has_rx = False
     while signals:
+        hjs = [(s[2], s[1]) for s in signals if s[0] == 'hj' and s[1] is True]
+        if hjs:
+            print(hjs)
         # print([f'{src} --{"H" if pulse else "L"}--> {name} ' for name, pulse, src in signals])
         if any(name == 'rx' and not pulse for name, pulse, _ in signals): has_rx = True
         new_signals = []

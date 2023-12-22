@@ -2,7 +2,7 @@ from functools import reduce
 
 LETTERS = ['x', 'm', 'a', 's']
 
-with (open('19.txt') as f):
+with open('19.txt') as f:
     lines = (line.strip() for line in f.readlines())
     workflows = []
     parts = []
