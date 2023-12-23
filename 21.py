@@ -15,6 +15,7 @@ def read_data():
 
 
 lines, si, sj = read_data()
+s_pos = si, sj
 len_lines = len(lines)
 len_line = len(lines[0])
 
@@ -47,12 +48,10 @@ def add_caches(heads_cache, curr, prev1, prev2):
     print('Growing cache', curr, f'as {prev1} + {prev2}')
     heads_cache[curr] = {}
     for pos, heads in heads_cache[prev1].items():
-        posi, posj = pos
-        heads_cache[curr][pos] = set()
-        for hi, hj in heads:
-            cache_key = hi % len_lines, hj % len_line
-            new_heads = ((i - posi, j - posj) for i, j in heads_cache[prev2][cache_key])
-            heads_cache[curr][pos].update(new_heads)
+        pi, pj = pos
+        heads_cache[curr][pos] = {(hi + hi2, hj + hj2)
+                                  for hi, hj in heads
+                                  for hi2, hj2 in heads_cache[prev2][((pi + hi) % len_lines, (pj + hj)% len_line)]}
 
 
 def get_cache(heads_cache, level, is_valid, prev1=None):
@@ -110,7 +109,7 @@ def part2():
     def is_valid(i, j):
         return lines[i % len_lines][j % len_line] is True
 
-    heads_cache = grow_heads_cache(24, is_valid)
+    cache_heads = grow_heads_cache(24, is_valid)
     exit(0)
 
     cycle_len = max(len_lines, len_line)
