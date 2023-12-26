@@ -1,4 +1,7 @@
+import math
+from functools import reduce
 from collections import defaultdict
+
 with (open('20.txt') as f):
     def parse(name):
         if '%' in name: return name[1:], '%'
@@ -21,16 +24,14 @@ with (open('20.txt') as f):
     set_state()
 
 
-def one_cycle():
+def one_cycle(cycle=None, watch=None):
     rv1, rv2 = 1, 0
     signals = [('broadcaster', False, 'button')]
-    has_rx = False
     while signals:
-        hjs = [(s[2], s[1]) for s in signals if s[0] == 'hj' and s[1] is True]
-        if hjs:
-            print(hjs)
-        # print([f'{src} --{"H" if pulse else "L"}--> {name} ' for name, pulse, src in signals])
-        if any(name == 'rx' and not pulse for name, pulse, _ in signals): has_rx = True
+        if watch:
+            watch_signals = [src for dest, signal, src in signals if src in watch and signal]
+            for src in watch_signals:
+                watch[src] = cycle
         new_signals = []
         for name, pulse, src_name in signals:
             m_type = types.get(name, None)
@@ -53,7 +54,7 @@ def one_cycle():
         signals = new_signals
         rv1 += sum(1 for _, pulse, _ in signals if not pulse)
         rv2 += sum(1 for _, pulse, _ in signals if pulse)
-    return rv1, rv2, has_rx
+    return rv1, rv2
 
 
 def part1():
@@ -65,15 +66,18 @@ def part1():
     return lo * hi
 
 
+def inward(name): return [n for n, outs in out.items() if name in outs]
+def lcm(a, b): return abs(a*b) // math.gcd(a, b)
+def lcm_multiple(numbers): return reduce(lcm, numbers)
+
+
 def part2():
-    i = 0
-    while True:
-        if i % 10000 == 0: print(i)
-        i += 1
-        res = one_cycle()
-        if res[2]:
-            print('Found!')
-            return res[2]
+    watch = {name: None for name in inward('hj')}
+    for i in range(10000):
+        one_cycle(cycle=i + 1, watch=watch)
+        if all(v is not None for v in watch.values()):
+            break
+    return lcm_multiple(watch.values())
 
 
 print('Part 1:', part1())  # 836127690
